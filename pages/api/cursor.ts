@@ -1,30 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "slonik";
+import { FilterableFields, isFilterableField } from "../../domain/FilterableFields";
+import { Transaction } from "../../domain/Transaction";
 import { createPool } from "../../utils/createPool";
-
-interface Transaction {
-  id: number;
-  code: string;
-  type: string;
-  amount: string;
-  description: string;
-  date: string;
-}
-
-const FilterableFields = {
-  code: "code",
-  type: "type",
-  amount: "amount",
-  description: "description",
-  date: "date",
-} as const;
-const FilterableFieldsKeys = Object.keys(FilterableFields);
-
-type FilterableFields = typeof FilterableFields[keyof typeof FilterableFields];
-
-const isFilterableField = (field: string): field is FilterableFields => {
-  return FilterableFieldsKeys.includes(field);
-};
 
 const createLimitFragment = (limit: number = 10, offset?: number) => {
   if (offset) {
