@@ -1,13 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { createPool, sql } from 'slonik';
-import { createQueryLoggingInterceptor } from "slonik-interceptor-query-logging";
-
-const interceptors = [
-  createQueryLoggingInterceptor()
-];
-
-const { DATABASE_URL } = process.env;
-
+import type { NextApiRequest, NextApiResponse } from "next";
+import { sql } from "slonik";
+import { createPool } from "../../utils/createPool";
 
 const createLimitFragment = (limit: number = 10, offset?: number) => {
   if (offset) {
@@ -17,17 +10,20 @@ const createLimitFragment = (limit: number = 10, offset?: number) => {
   return sql`LIMIT ${limit}`;
 };
 
-const createOrderByFragment = (field: string, order: 'asc' | 'desc' = 'asc') => {
+const createOrderByFragment = (
+  field: string,
+  order: "asc" | "desc" = "asc"
+) => {
   // slonik seemingly doesn't not allow you to interpolate ASC or DESC into a query.
   // I'd like to do sql`ORDER BY ${field} ${order}`, but it keeps throwing errors.
   const fragment = sql`ORDER BY ${sql.identifier([field])}`;
 
   return order === "asc" ? sql`${fragment} ASC` : sql`${fragment} DESC`;
-}
+};
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   console.time("request");
 
@@ -38,9 +34,7 @@ export default async function handler(
     description,
     order = "asc",
   } = req.query;
-  const pool = await createPool(`${DATABASE_URL}`, {
-    interceptors,
-  });
+  const pool = await createPool();
 
   if (
     Array.isArray(order) ||
@@ -52,8 +46,8 @@ export default async function handler(
     throw new Error("bad request");
   }
 
-  if (order !== 'asc' && order !== 'desc') {
-    throw new Error("bad request")
+  if (order !== "asc" && order !== "desc") {
+    throw new Error("bad request");
   }
 
   pool.connect(async (conn) => {
@@ -62,7 +56,7 @@ export default async function handler(
         *
       FROM
         transactions
-      ${createOrderByFragment('id', order)}
+      ${createOrderByFragment("id", order)}
       ${createLimitFragment(parseInt(limit, 10), parseInt(offset, 10))}
     `;
     const data = await conn.many(query);

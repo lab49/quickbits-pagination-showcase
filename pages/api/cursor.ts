@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { createPool, sql } from 'slonik';
-import { createQueryLoggingInterceptor } from "slonik-interceptor-query-logging";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { sql } from "slonik";
+import { createPool } from "../../utils/createPool";
 
 interface Transaction {
   id: number;
@@ -12,11 +12,11 @@ interface Transaction {
 }
 
 const FilterableFields = {
-  code: 'code',
-  type: 'type',
-  amount: 'amount',
-  description: 'description',
-  date: 'date',
+  code: "code",
+  type: "type",
+  amount: "amount",
+  description: "description",
+  date: "date",
 } as const;
 const FilterableFieldsKeys = Object.keys(FilterableFields);
 
@@ -24,14 +24,7 @@ type FilterableFields = typeof FilterableFields[keyof typeof FilterableFields];
 
 const isFilterableField = (field: string): field is FilterableFields => {
   return FilterableFieldsKeys.includes(field);
-}
-
-const interceptors = [
-  createQueryLoggingInterceptor()
-];
-
-const { DATABASE_URL } = process.env;
-
+};
 
 const createLimitFragment = (limit: number = 10, offset?: number) => {
   if (offset) {
@@ -41,21 +34,27 @@ const createLimitFragment = (limit: number = 10, offset?: number) => {
   return sql`LIMIT ${limit}`;
 };
 
-const createOrderByFragment = (field: string, order: 'asc' | 'desc' = 'asc') => {
+const createOrderByFragment = (
+  field: string,
+  order: "asc" | "desc" = "asc"
+) => {
   // slonik seemingly doesn't not allow you to interpolate ASC or DESC into a query.
   // I'd like to do sql`ORDER BY ${field} ${order}`, but it keeps throwing errors.
   const fragment = sql`ORDER BY ${sql.identifier([field])}`;
 
   return order === "asc" ? sql`${fragment} ASC` : sql`${fragment} DESC`;
-}
+};
 
-const createWhereFragment = (cursor: Transaction['id'], filterable: [FilterableFields, string][]) => {
+const createWhereFragment = (
+  cursor: Transaction["id"],
+  filterable: [FilterableFields, string][]
+) => {
   const fragments = [];
 
   if (cursor) {
     const subQuery = sql<Transaction>`SELECT id FROM transactions WHERE id = ${cursor}`;
 
-    fragments.push(sql`id >= (${subQuery})`)
+    fragments.push(sql`id >= (${subQuery})`);
   }
 
   filterable.forEach((field) => {
@@ -65,11 +64,11 @@ const createWhereFragment = (cursor: Transaction['id'], filterable: [FilterableF
   });
 
   return sql`WHERE ${sql.join(fragments, sql` AND `)}`;
-}
+};
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse
 ) {
   const {
     cursor = "1",
@@ -81,10 +80,7 @@ export default async function handler(
     code = "",
   } = req.query;
 
-
-  const pool = await createPool(`${DATABASE_URL}`, {
-    interceptors,
-  });
+  const pool = await createPool();
 
   if (
     Array.isArray(req.query.code) ||
@@ -102,8 +98,8 @@ export default async function handler(
     throw new Error("bad request");
   }
 
-  if (order !== 'asc' && order !== 'desc') {
-    throw new Error("bad request")
+  if (order !== "asc" && order !== "desc") {
+    throw new Error("bad request");
   }
 
   const toFilter = Object.keys(req.query)
@@ -122,7 +118,7 @@ export default async function handler(
     const query = sql<Transaction>`
       SELECT * FROM transactions
       ${createWhereFragment(parseInt(cursor, 10), toFilter)}
-      ${createOrderByFragment('id', order)}
+      ${createOrderByFragment("id", order)}
       ${createLimitFragment(parseInt(limit, 10), parseInt(offset, 10))}
     `;
     const data = await conn.many(query);
