@@ -4,14 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:log": "ROARR_LOG=true npm run dev | roarr pretty-print",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@roarr/cli": "^5.4.0",
     "next": "12.2.4",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "slonik": "^30.1.2",
+    "slonik-interceptor-query-logging": "^1.4.7"
   },
   "devDependencies": {
     "@types/node": "18.6.4",
