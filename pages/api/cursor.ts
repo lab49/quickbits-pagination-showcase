@@ -1,48 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "slonik";
+
 import { FilterableFields, isFilterableField } from "../../domain/FilterableFields";
 import { Transaction } from "../../domain/Transaction";
+import { createLimitFragment } from "../../utils/createLimitFragment";
+import { createOrderByFragment } from "../../utils/createOrderByFragment";
 import { createPool } from "../../utils/createPool";
-
-const createLimitFragment = (limit: number = 10, offset?: number) => {
-  if (offset) {
-    return sql`LIMIT ${limit} OFFSET ${offset}`;
-  }
-
-  return sql`LIMIT ${limit}`;
-};
-
-const createOrderByFragment = (
-  field: string,
-  order: "asc" | "desc" = "asc"
-) => {
-  // slonik seemingly doesn't not allow you to interpolate ASC or DESC into a query.
-  // I'd like to do sql`ORDER BY ${field} ${order}`, but it keeps throwing errors.
-  const fragment = sql`ORDER BY ${sql.identifier([field])}`;
-
-  return order === "asc" ? sql`${fragment} ASC` : sql`${fragment} DESC`;
-};
-
-const createWhereFragment = (
-  cursor: Transaction["id"],
-  filterable: [FilterableFields, string][]
-) => {
-  const fragments = [];
-
-  if (cursor) {
-    const subQuery = sql<Transaction>`SELECT id FROM transactions WHERE id = ${cursor}`;
-
-    fragments.push(sql`id >= (${subQuery})`);
-  }
-
-  filterable.forEach((field) => {
-    const [key, value] = field;
-
-    fragments.push(sql`${sql.identifier([key])} LIKE ${`%${value}%`}`);
-  });
-
-  return sql`WHERE ${sql.join(fragments, sql` AND `)}`;
-};
+import { createWhereFragment } from "../../utils/createWhereFragment";
 
 export default async function handler(
   req: NextApiRequest,
