@@ -9,6 +9,10 @@ interface Args {
 }
 
 export const createWhereFragment = ({ filterable, cursor }: Args) => {
+  if ((!filterable || !filterable.length) && !cursor) {
+    return sql``;
+  }
+
   const fragments = [];
 
   if (cursor) {
