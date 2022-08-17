@@ -16,13 +16,11 @@ const datasource: IServerSideDatasource = {
   // called by the grid when more rows are required
   getRows: ({ request, success, fail }) => {
     const url = new URL('/api/offset', window.location.origin);
-    const { endRow, startRow, sortModel } = request;
-    const offset = startRow === 0 ? 0 : (endRow ?? 0) - (startRow ?? 0);
-
+    const { startRow, sortModel } = request;
     const params = new URLSearchParams();
 
     params.set('limit', `${PER_PAGE_COUNT}`);
-    params.set('offset', `${offset}`);
+    params.set('offset', `${startRow}`);
 
     if (sortModel.length) {
       const { sort, colId } = sortModel[0];
