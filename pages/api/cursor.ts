@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "slonik";
-import { z } from "zod";
 import { getReasonPhrase, StatusCodes } from "http-status-codes";
 
 import {
@@ -12,30 +11,19 @@ import { createLimitFragment } from "../../utils/createLimitFragment";
 import { createOrderByFragment } from "../../utils/createOrderByFragment";
 import { createPool } from "../../utils/createPool";
 import { createWhereFragment } from "../../utils/createWhereFragment";
+import { PaginationSchema } from "../../domain/PaginationSchema";
+import { CursorSchema } from "../../domain/CursorSchema";
+import { FilterableSchema } from "../../domain/FilterableSchema";
 
-const Pagination = z.strictObject({
-  cursor: z.string().optional().default("1"),
-  offset: z.string().optional().default("0"),
-  limit: z.string().optional().default("10"),
-  order: z.enum(["asc", "desc"]).optional(),
-});
-
-const Filterable = z.strictObject({
-  code: z.string().optional(),
-  type: z.string().optional(),
-  amount: z.string().optional(),
-  description: z.string().optional(),
-  date: z.string().optional(),
-});
-
-const Query = Pagination.merge(Filterable);
+const QuerySchema =
+  PaginationSchema.merge(CursorSchema).merge(FilterableSchema);
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   try {
-    const query = Query.parse(req.query);
+    const query = QuerySchema.parse(req.query);
     const { cursor, order, limit, offset } = query;
     const pool = await createPool();
     const toFilter = Object.entries(query).filter<[FilterableFields, string]>(
