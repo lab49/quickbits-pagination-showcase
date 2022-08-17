@@ -8,6 +8,8 @@ import { FilterableSchema } from "../../domain/FilterableSchema";
 import { PaginationSchema } from "../../domain/PaginationSchema";
 import { getReasonPhrase, StatusCodes } from "http-status-codes";
 import { Transaction } from "../../domain/Transaction";
+import { getFilterableFieldsFromQuery } from "../../utils/getFilterableFieldsFromQuery";
+import { createWhereFragment } from "../../utils/createWhereFragment";
 
 const QuerySchema = PaginationSchema.merge(FilterableSchema);
 
@@ -19,10 +21,12 @@ export default async function handler(
     const query = QuerySchema.parse(req.query);
     const { order, limit, offset } = query;
     const pool = await createPool();
+    const filterable = getFilterableFieldsFromQuery(query);
 
     pool.connect(async (conn) => {
       const query = sql<Transaction>`
         SELECT * FROM transactions
+        ${createWhereFragment({ filterable })}
         ${createOrderByFragment("id", order)}
         ${createLimitFragment(parseInt(limit, 10), parseInt(offset, 10))}
       `;

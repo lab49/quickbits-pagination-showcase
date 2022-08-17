@@ -3,10 +3,12 @@ import { sql } from "slonik";
 import { FilterableFields } from "../domain/FilterableFields";
 import { Transaction } from "../domain/Transaction";
 
-export const createWhereFragment = (
-  cursor: Transaction["id"],
-  filterable: [FilterableFields, string][]
-) => {
+interface Args {
+  filterable?: [FilterableFields, string][];
+  cursor?: Transaction["id"];
+}
+
+export const createWhereFragment = ({ filterable, cursor }: Args) => {
   const fragments = [];
 
   if (cursor) {
@@ -15,11 +17,13 @@ export const createWhereFragment = (
     fragments.push(sql`id >= (${subQuery})`);
   }
 
-  filterable.forEach((field) => {
-    const [key, value] = field;
+  if (filterable) {
+    filterable.forEach((field) => {
+      const [key, value] = field;
 
-    fragments.push(sql`${sql.identifier([key])} LIKE ${`%${value}%`}`);
-  });
+      fragments.push(sql`${sql.identifier([key])} LIKE ${`%${value}%`}`);
+    });
+  }
 
   return sql`WHERE ${sql.join(fragments, sql` AND `)}`;
 };
