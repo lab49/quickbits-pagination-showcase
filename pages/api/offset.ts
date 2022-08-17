@@ -10,8 +10,9 @@ import { PaginationSchema } from "../../domain/PaginationSchema";
 import { Transaction } from "../../domain/Transaction";
 import { getFilterableFieldsFromQuery } from "../../utils/getFilterableFieldsFromQuery";
 import { createWhereFragment } from "../../utils/createWhereFragment";
+import { SortableSchema } from "../../domain/SortableSchema";
 
-const QuerySchema = PaginationSchema.merge(FilterableSchema);
+const QuerySchema = PaginationSchema.merge(FilterableSchema).merge(SortableSchema);
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,7 +20,7 @@ export default async function handler(
 ) {
   try {
     const query = QuerySchema.parse(req.query);
-    const { order, limit, offset } = query;
+    const { limit, offset, sortBy, sortDir } = query;
     const pool = await createPool();
     const filterable = getFilterableFieldsFromQuery(query);
 
@@ -27,7 +28,7 @@ export default async function handler(
       const query = sql<Transaction>`
         SELECT * FROM transactions
         ${createWhereFragment({ filterable })}
-        ${createOrderByFragment("id", order)}
+        ${createOrderByFragment(sortBy, sortDir)}
         ${createLimitFragment(parseInt(limit, 10), parseInt(offset, 10))}
       `;
       const data = await conn.many(query);
