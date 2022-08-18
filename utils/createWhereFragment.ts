@@ -6,9 +6,10 @@ import { Transaction } from "../domain/Transaction";
 interface Args {
   filterable?: [FilterableFields, string][];
   cursor?: Transaction["id"];
+  sortDir?: 'asc' | 'desc';
 }
 
-export const createWhereFragment = ({ filterable, cursor }: Args) => {
+export const createWhereFragment = ({ filterable, cursor, sortDir }: Args) => {
   if ((!filterable || !filterable.length) && !cursor) {
     return sql``;
   }
@@ -18,7 +19,11 @@ export const createWhereFragment = ({ filterable, cursor }: Args) => {
   if (cursor) {
     const subQuery = sql<Transaction>`SELECT id FROM transactions WHERE id = ${cursor}`;
 
-    fragments.push(sql`id >= (${subQuery})`);
+    if (sortDir === 'asc') {
+      fragments.push(sql`id >= (${subQuery})`);
+    } else if (sortDir === 'desc') {
+      fragments.push(sql`id <= (${subQuery} ORDER BY id ASC)`);
+    }
   }
 
   if (filterable) {

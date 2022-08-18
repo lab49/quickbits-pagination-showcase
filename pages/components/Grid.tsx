@@ -12,8 +12,7 @@ ModuleRegistry.register(ServerSideRowModelModule);
 
 const PER_PAGE_COUNT = 50;
 
-const datasource: IServerSideDatasource = {
-  // called by the grid when more rows are required
+const offsetDatasource: IServerSideDatasource = {
   getRows: ({ request, success, fail }) => {
     const url = new URL('/api/offset', window.location.origin);
     const { startRow, sortModel } = request;
@@ -43,28 +42,66 @@ const datasource: IServerSideDatasource = {
   },
 };
 
-export const Grid = () => {
-  const [rowData] = useState();
+const cursorDatasource: IServerSideDatasource = {
+  getRows: ({ request, api, success, fail }) => {
+    const url = new URL('/api/cursor', window.location.origin);
+    const { sortModel } = request;
+    const params = new URLSearchParams();
+    const cursor = api.getDisplayedRowAtIndex(api.getLastDisplayedRow() - 1)?.data?.id;
 
-  const [columnDefs] = useState([
-    { field: "id", filter: true },
-    { field: "type", filter: true },
-    { field: "amount", filter: true },
-    { field: "description", filter: true },
-    { field: "date", filter: true },
-  ]);
+    if (cursor) {
+      params.set('cursor', cursor);
+    }
 
+    params.set('limit', `${PER_PAGE_COUNT}`);
+
+    if (sortModel.length) {
+      const { sort } = sortModel[0];
+
+      params.set('sortDir', sort);
+    }
+
+    url.search = params.toString();
+
+    fetch(url)
+      .then((resp) => resp.json())
+      .then((resp) => {
+        success({ rowData: resp.data });
+      })
+      .catch((err) => {
+        console.log('error fetching data', err);
+        fail();
+      })
+  },
+};
+
+interface Props {
+  type?: 'cursor';
+}
+
+const columnDefs = [
+  { field: "id", sortable: true },
+  { field: "type" },
+  { field: "amount" },
+  { field: "description" },
+  { field: "date" },
+];
+
+export const Grid = ({ type }: Props) => {
+  const hasSortableColumns = type !== 'cursor';
+  const datasource = type === 'cursor' ? cursorDatasource : offsetDatasource;
   const defaultColDef = useMemo(
     () => ({
-      sortable: true,
+      sortable: hasSortableColumns,
+      filter: true,
     }),
-    []
+    [hasSortableColumns]
   );
 
   return (
     <div className="ag-theme-alpine" style={{ height: 400, width: 600 }}>
       <AgGridReact<Transaction>
-        rowData={rowData}
+        getRowId={(row) => `${row.data.id}`}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         rowModelType="serverSide"

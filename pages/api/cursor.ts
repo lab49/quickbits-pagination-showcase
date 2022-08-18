@@ -30,7 +30,7 @@ export default async function handler(
     pool.connect(async (conn) => {
       const query = sql<Transaction>`
         SELECT * FROM transactions
-        ${createWhereFragment({ filterable, cursor: parseInt(cursor, 10) })}
+        ${createWhereFragment({ filterable, cursor: parseInt(`${cursor}`, 10), sortDir })}
         ${createOrderByFragment(DEFAULT_SORT_KEY, sortDir)}
         ${createLimitFragment(parseInt(limit, 10), parseInt(offset, 10))}
       `;
