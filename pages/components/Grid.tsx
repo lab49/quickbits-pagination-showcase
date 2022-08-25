@@ -120,7 +120,7 @@ interface Props {
 }
 
 const columnDefs = [
-  { field: "id", sortable: true },
+  { field: "id", sortable: true, width: 65 },
   { field: "type" },
   { field: "amount" },
   { field: "description" },
@@ -135,6 +135,8 @@ export const Grid = ({ type }: Props) => {
     () => ({
       sortable: hasSortableColumns,
       filter: true,
+      resizable: false,
+      width: 150,
     }),
     [hasSortableColumns]
   );
