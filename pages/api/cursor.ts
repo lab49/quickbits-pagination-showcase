@@ -12,6 +12,7 @@ import { CursorSchema } from "../../domain/CursorSchema";
 import { FilterableSchema } from "../../domain/FilterableSchema";
 import { getFilterableFieldsFromQuery } from "../../utils/getFilterableFieldsFromQuery";
 import { DEFAULT_SORT_KEY, SortableSchema } from "../../domain/SortableSchema";
+import { PaginationResponse } from "../../domain/PaginationResponse";
 
 const QuerySchema = PaginationSchema.merge(CursorSchema)
   .merge(FilterableSchema)
@@ -19,9 +20,10 @@ const QuerySchema = PaginationSchema.merge(CursorSchema)
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<PaginationResponse | string>
 ) {
   try {
+    const start = performance.now();
     const query = QuerySchema.parse(req.query);
     const { cursor, limit, offset, sortDir } = query;
     const pool = await createPool();
@@ -35,8 +37,10 @@ export default async function handler(
         ${createLimitFragment(parseInt(limit, 10), parseInt(offset, 10))}
       `;
       const data = await conn.many(query);
+      const end = performance.now();
+      const requestTime = end - start;
 
-      res.status(StatusCodes.OK).json({ data });
+      res.status(StatusCodes.OK).json({ data, performance: { requestTime } });
     });
   } catch (err) {
     res
