@@ -1,31 +1,59 @@
-import { useMemo } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { ModuleRegistry, IServerSideDatasource } from "@ag-grid-community/core";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
 
 import { Transaction } from "../../domain/Transaction";
+import { PaginationResponse } from "../../domain/PaginationResponse";
+import { RequestPerf } from "../../domain/RequestPerf";
 
 import "@ag-grid-community/styles/ag-grid.css";
-import "@ag-grid-community/styles/ag-theme-alpine.css";
+import "@ag-grid-community/styles/ag-theme-balham.css";
 
 ModuleRegistry.register(ServerSideRowModelModule);
 
-const PER_PAGE_COUNT = 15;
+const PER_PAGE_COUNT = 25;
 
-const fetchTransactions = async (url: URL): Promise<Transaction[]> => {
+const fetchTransactions = async (
+  url: URL
+): Promise<PaginationResponse & { data: Transaction[] }> => {
   const resp = await fetch(url);
-  const { data, errors } = await resp.json();
-  const txn = data as Transaction[];
-  const sorted = txn.sort((a, b) => a.id - b.id);
 
   if (resp.ok) {
-    return Promise.resolve(sorted);
+    const { data: unsortedData, performance } =
+      (await resp.json()) as PaginationResponse;
+    const data = unsortedData.slice().sort((a, b) => a.id - b.id);
+
+    return Promise.resolve({
+      data,
+      performance,
+    });
   } else {
-    return Promise.reject(`some error: ${errors}`);
+    return Promise.reject(`some error`);
   }
 };
 
-const createOffsetDatasource = () => {
+type AgGridSuccess = Parameters<IServerSideDatasource["getRows"]>[0]["success"];
+type AgGridFail = Parameters<IServerSideDatasource["getRows"]>[0]["fail"];
+
+const getRowData = (
+  url: URL,
+  agGridSuccess: AgGridSuccess,
+  agGridFail: AgGridFail,
+  onGetRows: OnGetRows
+) => {
+  fetchTransactions(url)
+    .then(({ data: rowData, performance }) => {
+      onGetRows(performance);
+      agGridSuccess({ rowData });
+    })
+    .catch((err) => {
+      console.log("error fetching data", err);
+      agGridFail();
+    });
+};
+
+const createOffsetDatasource = (onGetRows: OnGetRows) => {
   const offsetDatasource: IServerSideDatasource = {
     getRows: ({ request, success, fail }) => {
       const url = new URL("/api/offset", window.location.origin);
@@ -44,21 +72,14 @@ const createOffsetDatasource = () => {
 
       url.search = params.toString();
 
-      fetchTransactions(url)
-        .then((rowData) => {
-          success({ rowData });
-        })
-        .catch((err) => {
-          console.log("error fetching data", err);
-          fail();
-        });
+      getRowData(url, success, fail, onGetRows);
     },
   };
 
   return offsetDatasource;
 };
 
-const createCursorDatasource = () => {
+const createCursorDatasource = (onGetRows: OnGetRows) => {
   let previousHighestCacheBlock: number = 0;
 
   const datasource: IServerSideDatasource = {
@@ -101,14 +122,7 @@ const createCursorDatasource = () => {
 
       url.search = params.toString();
 
-      fetchTransactions(url)
-        .then((rowData) => {
-          success({ rowData });
-        })
-        .catch((err) => {
-          console.log("error fetching data", err);
-          fail();
-        });
+      getRowData(url, success, fail, onGetRows);
     },
   };
 
@@ -119,6 +133,8 @@ interface Props {
   type?: "cursor";
 }
 
+type OnGetRows = (perf: RequestPerf) => void;
+
 const columnDefs = [
   { field: "id", sortable: true, width: 65 },
   { field: "type" },
@@ -127,33 +143,74 @@ const columnDefs = [
   { field: "date" },
 ];
 
+const defaultColDefs = {
+  filter: true,
+  resizeable: false,
+  width: 150,
+}
+
 export const Grid = ({ type }: Props) => {
+  const [log, setLog] = useState<RequestPerf[]>([]);
+  const onGetRows = useCallback(
+    (perf: RequestPerf) => {
+      setLog((prevLog) => [...prevLog, perf].slice(-5));
+    },
+    [setLog]
+  );
+  const datasource = useMemo(() => {
+    return type === "cursor"
+      ? createCursorDatasource(onGetRows)
+      : createOffsetDatasource(onGetRows);
+  }, [type, onGetRows]);
   const hasSortableColumns = type !== "cursor";
-  const datasource =
-    type === "cursor" ? createCursorDatasource() : createOffsetDatasource();
   const defaultColDef = useMemo(
     () => ({
+      ...defaultColDefs,
       sortable: hasSortableColumns,
-      filter: true,
-      resizable: false,
-      width: 150,
     }),
     [hasSortableColumns]
   );
 
   return (
-    <div className="ag-theme-alpine" style={{ height: 400, width: 600 }}>
-      <AgGridReact<Transaction>
-        debug={false}
-        getRowId={(row) => `${row.data.id}`}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        rowModelType="serverSide"
-        serverSideDatasource={datasource}
-        serverSideInfiniteScroll={true}
-        cacheBlockSize={PER_PAGE_COUNT}
-        maxBlocksInCache={5}
-      />
+    <div className="flex">
+      <div
+        className="ag-theme-balham-dark m-4 grow-0 shrink-0 shadow-lg"
+        style={{ height: 400, width: 667 }}
+      >
+        <AgGridReact<Transaction>
+          debug={false}
+          getRowId={(row) => `${row.data.id}`}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          rowModelType="serverSide"
+          serverSideDatasource={datasource}
+          serverSideInfiniteScroll={true}
+          cacheBlockSize={PER_PAGE_COUNT}
+          maxBlocksInCache={5}
+        />
+      </div>
+
+      <div>
+        <button onClick={() => setLog([])}>clear</button>
+        <div className="font-mono text-green-400 bg-slate-900">
+          {log.map((el) => (
+            <div className="px-2 py-4 odd:bg-slate-800/50" key={el.requestTime + el.sql}>
+              <p className="mb-1 text-xs text-green-600">
+                <span className="mr-4"><span className="text-slate-500">Request:</span> {`${el.requestTime.toFixed(2)}ms`}</span>
+                <span><span className="text-slate-500">SQL:</span> {`${el.queryTime.toFixed(2)}ms`}</span>
+              </p>
+
+              <p className="text-sm">
+                {el.sql.replace(
+                  /\$[\d]+/g,
+                  (match) =>
+                    `${el.vals.slice()[parseInt(match.slice(1), 10) - 1]}`
+                )}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

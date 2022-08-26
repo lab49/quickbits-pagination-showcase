@@ -1,9 +1,7 @@
-import { Result } from "../utils/createPool";
+import { RequestPerf } from "./RequestPerf";
 import { Transaction } from "./Transaction";
 
 export interface PaginationResponse {
   data: readonly Transaction[];
-  performance: Result & {
-    requestTime: number;
-  };
+  performance: RequestPerf;
 }
