@@ -1,12 +1,17 @@
 import { createQueryLoggingInterceptor } from "slonik-interceptor-query-logging";
 import { createPool as slonikCreatePool } from "slonik";
 
+import { createPerformanceInterceptor, PerfCallback } from "./createPerformanceInterceptor";
+
 const { DATABASE_URL } = process.env;
 
-const interceptors = [createQueryLoggingInterceptor()];
+export const createPool = async (perfCallback?: PerfCallback) => {
+  const interceptors = [
+    createQueryLoggingInterceptor(),
+    createPerformanceInterceptor(perfCallback),
+  ];
 
-export const createPool = async () => {
-  return await slonikCreatePool(`${DATABASE_URL}`, {
+  return slonikCreatePool(`${DATABASE_URL}`, {
     interceptors,
   });
 };

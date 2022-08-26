@@ -13,6 +13,7 @@ import { FilterableSchema } from "../../domain/FilterableSchema";
 import { getFilterableFieldsFromQuery } from "../../utils/getFilterableFieldsFromQuery";
 import { DEFAULT_SORT_KEY, SortableSchema } from "../../domain/SortableSchema";
 import { PaginationResponse } from "../../domain/PaginationResponse";
+import { Result } from "../../utils/createPerformanceInterceptor";
 
 const QuerySchema = PaginationSchema.merge(CursorSchema)
   .merge(FilterableSchema)
@@ -23,24 +24,39 @@ export default async function handler(
   res: NextApiResponse<PaginationResponse | string>
 ) {
   try {
+    // Gather up details from the input.
     const start = performance.now();
     const query = QuerySchema.parse(req.query);
-    const { cursor, limit, offset, sortDir } = query;
-    const pool = await createPool();
     const filterable = getFilterableFieldsFromQuery(query);
+    const { cursor, limit, offset, sortDir } = query;
 
-    pool.connect(async (conn) => {
-      const query = sql<Transaction>`
+    // TODO (brianmcallister) - Not sure how else to structure this
+    // for the time being to make the indirection less confusing.
+    let details: Result;
+
+    // Make the database queries.
+    const pool = await createPool((perf) => (details = perf));
+    const data = await pool.connect(async (conn) =>
+      conn.many(sql<Transaction>`
         SELECT * FROM transactions
-        ${createWhereFragment({ filterable, cursor: parseInt(`${cursor}`, 10), sortDir })}
+        ${createWhereFragment({
+          filterable,
+          cursor: parseInt(`${cursor}`, 10),
+          sortDir,
+        })}
         ${createOrderByFragment(DEFAULT_SORT_KEY, sortDir)}
         ${createLimitFragment(parseInt(limit, 10), parseInt(offset, 10))}
-      `;
-      const data = await conn.many(query);
-      const end = performance.now();
-      const requestTime = end - start;
+      `)
+    );
 
-      res.status(StatusCodes.OK).json({ data, performance: { requestTime } });
+    // Respond to the request.
+    res.status(StatusCodes.OK).json({
+      data,
+      performance: {
+        requestTime: performance.now() - start,
+        // @ts-expect-error
+        ...details,
+      },
     });
   } catch (err) {
     res
