@@ -3,16 +3,16 @@ import { AgGridReact } from "@ag-grid-community/react";
 import { ModuleRegistry, IServerSideDatasource } from "@ag-grid-community/core";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
 
-import { Transaction } from "../../domain/Transaction";
-import { PaginationResponse } from "../../domain/PaginationResponse";
-import { RequestPerf } from "../../domain/RequestPerf";
+import { Transaction } from "../domain/Transaction";
+import { PaginationResponse } from "../domain/PaginationResponse";
+import { RequestPerf } from "../domain/RequestPerf";
 
 import "@ag-grid-community/styles/ag-grid.css";
 import "@ag-grid-community/styles/ag-theme-balham.css";
 
 ModuleRegistry.register(ServerSideRowModelModule);
 
-const PER_PAGE_COUNT = 25;
+const PER_PAGE_COUNT = 100;
 
 const fetchTransactions = async (
   url: URL
@@ -190,7 +190,7 @@ export const Grid = ({ type }: Props) => {
         />
       </div>
 
-      <div>
+      <div className="flex-1 border-2">
         <button onClick={() => setLog([])}>clear</button>
         <div className="font-mono text-green-400 bg-slate-900">
           {log.map((el) => (
@@ -200,7 +200,7 @@ export const Grid = ({ type }: Props) => {
                 <span><span className="text-slate-500">SQL:</span> {`${el.queryTime.toFixed(2)}ms`}</span>
               </p>
 
-              <p className="text-sm">
+              <p className="text-sm text-green-500">
                 {el.sql.replace(
                   /\$[\d]+/g,
                   (match) =>
