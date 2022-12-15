@@ -27,9 +27,8 @@ export default async function handler(
     // Gather up details from the input.
     const start = performance.now();
     const query = QuerySchema.parse(req.query);
-    // const filterable = getFilterableFieldsFromQuery(query);
+    const filterable = getFilterableFieldsFromQuery(query);
     const { cursor, limit, offset, sortDir } = query;
-    const filterable = req.body;
 
     // TODO (brianmcallister) - Not sure how else to structure this
     // for the time being to make the indirection less confusing.
