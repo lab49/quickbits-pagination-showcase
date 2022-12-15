@@ -13,3 +13,9 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
+
+.ag-ltr .ag-cell {
+  font-size: 11px;
+  font-weight: 400;
+  color: #666;
+}
