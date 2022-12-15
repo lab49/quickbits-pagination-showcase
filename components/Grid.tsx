@@ -15,9 +15,21 @@ ModuleRegistry.register(ServerSideRowModelModule);
 const PER_PAGE_COUNT = 100;
 
 const fetchTransactions = async (
-  url: URL
+  url: URL,
+  filterData: any
 ): Promise<PaginationResponse & { data: Transaction[] }> => {
-  const resp = await fetch(url);
+  const resp = await fetch(url, {
+    method: 'POST', 
+    mode: 'cors',
+    cache: 'no-cache', 
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow',
+    referrerPolicy: 'no-referrer', 
+    body: JSON.stringify(filterData)
+  });
 
   if (resp.ok) {
     const { data: unsortedData, performance } =
@@ -38,11 +50,12 @@ type AgGridFail = Parameters<IServerSideDatasource["getRows"]>[0]["fail"];
 
 const getRowData = (
   url: URL,
+  body: any,
   agGridSuccess: AgGridSuccess,
   agGridFail: AgGridFail,
   onGetRows: OnGetRows
 ) => {
-  fetchTransactions(url)
+  fetchTransactions(url, body)
     .then(({ data: rowData, performance }) => {
       onGetRows(performance);
       agGridSuccess({ rowData });
@@ -57,7 +70,7 @@ const createOffsetDatasource = (onGetRows: OnGetRows) => {
   const offsetDatasource: IServerSideDatasource = {
     getRows: ({ request, success, fail }) => {
       const url = new URL("/api/offset", window.location.origin);
-      const { startRow, sortModel } = request;
+      const { startRow, sortModel, filterModel } = request;
       const params = new URLSearchParams();
 
       params.set("limit", `${PER_PAGE_COUNT}`);
@@ -72,7 +85,7 @@ const createOffsetDatasource = (onGetRows: OnGetRows) => {
 
       url.search = params.toString();
 
-      getRowData(url, success, fail, onGetRows);
+      getRowData(url, filterModel, success, fail, onGetRows);
     },
   };
 
@@ -85,7 +98,7 @@ const createCursorDatasource = (onGetRows: OnGetRows) => {
   const datasource: IServerSideDatasource = {
     getRows: ({ request, api, success, fail }) => {
       const url = new URL("/api/cursor", window.location.origin);
-      const { sortModel } = request;
+      const { sortModel, filterModel } = request;
       const params = new URLSearchParams();
 
       params.set("limit", `${PER_PAGE_COUNT}`);
@@ -122,7 +135,7 @@ const createCursorDatasource = (onGetRows: OnGetRows) => {
 
       url.search = params.toString();
 
-      getRowData(url, success, fail, onGetRows);
+      getRowData(url, filterModel, success, fail, onGetRows);
     },
   };
 
