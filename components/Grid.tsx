@@ -188,7 +188,7 @@ export const Grid = ({ type }: Props) => {
     <div className="flex">
       <div
         className="ag-theme-balham mt-5 grow-0 shrink-0 shadow-lg"
-        style={{ height: 400, width: 667 }}
+        style={{ height: 400, width: 685 }}
       >
         <AgGridReact<Transaction>
           debug={false}
