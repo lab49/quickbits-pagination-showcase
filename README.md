@@ -18,6 +18,16 @@ In this demo, we're using the AG Grid [Server-Side Row Model](https://ag-grid.co
 
 ## Developers guide
 
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+Clone this repository, `npm install`, `npm run dev`, and you're ready to get going:
+
+```bash
+git clone git@github.com:lab49/quickbits-recoil-atom-family.git
+npm i
+npm run dev
+```
+
 ### Prerequisite
 
 ##### To run this project, you will need to complete the following steps.
@@ -29,16 +39,6 @@ In this demo, we're using the AG Grid [Server-Side Row Model](https://ag-grid.co
         
         DATABASE_URL = postgresql://db_username:db_password@localhost:port_number/db_name
 
-
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
-Clone this repository, `npm install`, `npm run dev`, and you're ready to get going:
-
-```bash
-git clone git@github.com:lab49/quickbits-recoil-atom-family.git
-npm i
-npm run dev
-```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to get started!
 
