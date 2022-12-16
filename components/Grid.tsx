@@ -136,11 +136,11 @@ interface Props {
 type OnGetRows = (perf: RequestPerf) => void;
 
 const columnDefs = [
-  { field: "id", sortable: true, width: 65 },
-  { field: "type" },
-  { field: "amount" },
-  { field: "description" },
-  { field: "date" },
+  { field: "id", sortable: true, width: 65, cellClass: ['text-gray-600','text-xs', 'font-normal']},
+  { field: "type", cellClass: ['text-gray-600','text-xs', 'font-normal']},
+  { field: "amount", cellClass: ['text-gray-600','text-xs', 'font-normal']},
+  { field: "description", cellClass: ['text-gray-600','text-xs', 'font-normal']},
+  { field: "date", cellClass: ['text-gray-600','text-xs', 'font-normal']},
 ];
 
 const defaultColDefs = {
