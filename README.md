@@ -1,69 +1,44 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+<br />
+<br />
 
-## Prerequisite
+<img src="https://user-images.githubusercontent.com/97474840/196573601-19e57d9f-0498-48a6-b8ce-3a44f3f036c0.png" width="500" alt="Lab49 quickbits" />
+
+<br />
+
+## Lab49 `quickbits`: Pagination showcase
+This project is a quickbits showcase of various pagination techniques, including cursor based pagination and offset based pagination. [This article](https://dev.to/appwrite/this-is-why-you-should-use-cursor-pagination-4nh5) has an excellent rundown of the two types.
+
+Pagination (and sorting and filtering) often needs to be handled server side, because users in the finance industry are typically working with very large data sets. If you have hundreds of thousands, or millions, of rows of data available to explore, it's not practical to send all of that data to a client application all at once. Not only will the data set itself be a large amount of data to send over the wire, not all UIs can work effeciently with that data. AG Grid is very sophisticated and can handle large data sets on the client, but AG Grid also provides tools to interact with an API to query paginated data.
+
+In this demo, we're using the AG Grid [Server-Side Row Model](https://ag-grid.com/react-data-grid/server-side-model/) to do just that.
+
+<img width="1607" alt="image" src="https://user-images.githubusercontent.com/63244584/207623331-26d9f0da-a618-4366-b1c6-ad085a15a5d9.png">
+
+### [View the live demo!](https://quickbits-pagination-showcase.vercel.app/)
+
+## Developers guide
+
+### Prerequisite
 
 ##### To run this project, you will need to complete the following steps.
 
 1. Install postgres DB
 2. Creata a database and run the following query to create test data.
-
-        DROP TABLE transactions;
-        
-        CREATE TABLE transactions (
-            id SERIAL UNIQUE NOT NULL,
-            code TEXT,
-            type TEXT,
-            amount TEXT,
-            description TEXT,
-            date TEXT
-        );
-    
-        insert into transactions (
-            code, type, amount, description, date
-        )
-        select
-            md5(random()::text),
-            md5(random()::text),
-            md5(random()::text),
-            md5(random()::text),
-            md5(random()::text)
-        from generate_series(1, 1000000) s(i);
-        
 3. Create one file in the project root called `.env.local`.
 4. Add the following line to that file and replace the strings `db_username`, `db_password`, `port_number` and `db_name` with your local database configuration.
         
         DATABASE_URL = postgresql://db_username:db_password@localhost:port_number/db_name
 
 
-## Getting Started
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-First, run the development server:
+Clone this repository, `npm install`, `npm run dev`, and you're ready to get going:
 
 ```bash
+git clone git@github.com:lab49/quickbits-recoil-atom-family.git
+npm i
 npm run dev
-# or
-yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser to get started!
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
