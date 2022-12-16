@@ -33,7 +33,7 @@ npm run dev
 ##### To run this project, you will need to complete the following steps.
 
 1. Install postgres DB
-2. Creata a database and run the following query to create test data.
+2. Creata a database and run the query written in the file `add-db-records.sql` located in the root of this project to create test data.
 3. Create one file in the project root called `.env.local`.
 4. Add the following line to that file and replace the strings `db_username`, `db_password`, `port_number` and `db_name` with your local database configuration.
         
