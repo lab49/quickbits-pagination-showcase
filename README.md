@@ -4,7 +4,6 @@
 <img src="https://user-images.githubusercontent.com/97474840/196573601-19e57d9f-0498-48a6-b8ce-3a44f3f036c0.png" width="500" alt="Lab49 quickbits" />
 
 <br />
-
 ## Lab49 `quickbits`: Pagination showcase
 This project is a quickbits showcase of various pagination techniques, including cursor based pagination and offset based pagination. [This article](https://dev.to/appwrite/this-is-why-you-should-use-cursor-pagination-4nh5) has an excellent rundown of the two types.
 
