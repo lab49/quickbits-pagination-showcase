@@ -174,7 +174,7 @@ export const Grid = ({ type }: Props) => {
   return (
     <div className="flex">
       <div
-        className="ag-theme-balham mt-5 grow-0 shrink-0 shadow-lg"
+        className="ag-theme-balham mt-7 grow-0 shrink-0 shadow-lg"
         style={{ height: 400, width: 685 }}
       >
         <AgGridReact<Transaction>
@@ -192,12 +192,12 @@ export const Grid = ({ type }: Props) => {
 
       <div className="ml-5 items-end">
         <div className="flex flex-col items-end">
-          <button className="focus:outline-none font-small text-red-700 rounded-full text-sm mr-4 px-1.5" onClick={() => setLog([])}>Clear</button>
+          <button className="bg-red-700 hover:bg-red-900 text-white font-light py-0 px-2 mb-1 mr-4 rounded" onClick={() => setLog([])}>Clear</button>
         </div>
         
-        <div className="font-mono text-green-400 bg-slate-900 overflow-y-scroll" style={{ maxHeight: 400}}>
+        <div className="font-mono text-green-400 bg-slate-900 overflow-y-scroll" style={{ maxHeight: 400, width: 500}}>
           {log.map((el) => (
-            <div className="px-2 py-4 odd:bg-slate-800/50" key={el.requestTime + el.sql}>
+            <div className="px-2 py-4 odd:bg-slate-800/50" style={{minHeight:84}} key={el.requestTime + el.sql}>
               <p className="mb-1 text-xs text-green-600">
                 <span className="mr-4"><span className="text-slate-500">Request:</span> {`${el.requestTime.toFixed(2)}ms`}</span>
                 <span><span className="text-slate-500">SQL:</span> {`${el.queryTime.toFixed(2)}ms`}</span>
