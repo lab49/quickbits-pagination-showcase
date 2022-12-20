@@ -36,7 +36,7 @@ npm run dev
 3. Create one file in the project root called `.env.local`.
 4. Add the following line to that file and replace the strings `db_username`, `db_password`, `port_number` and `db_name` with your local database configuration.
         
-        DATABASE_URL = postgresql://db_username:db_password@localhost:port_number/db_name
+`DATABASE_URL = postgresql://db_username:db_password@localhost:port_number/db_name`
 
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to get started!
