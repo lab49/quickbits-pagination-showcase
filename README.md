@@ -4,7 +4,6 @@
 <img src="https://user-images.githubusercontent.com/97474840/196573601-19e57d9f-0498-48a6-b8ce-3a44f3f036c0.png" width="500" alt="Lab49 quickbits" />
 
 <br />
-
 ## Lab49 `quickbits`: Pagination showcase
 This project is a quickbits showcase of various pagination techniques, including cursor based pagination and offset based pagination. [This article](https://dev.to/appwrite/this-is-why-you-should-use-cursor-pagination-4nh5) has an excellent rundown of the two types.
 
@@ -28,4 +27,17 @@ npm i
 npm run dev
 ```
 
+### Prerequisite
+
+##### To run this project, you will need to complete the following steps.
+
+1. Install postgres DB
+2. Create a database and run the query written in the file `add-db-records.sql` located in the root of this project to create test data.
+3. Create one file in the project root called `.env.local`.
+4. Add the following line to that file and replace the strings `db_username`, `db_password`, `port_number` and `db_name` with your local database configuration.
+        
+`DATABASE_URL = postgresql://db_username:db_password@localhost:port_number/db_name`
+
+
 Open [http://localhost:3000](http://localhost:3000) in your browser to get started!
+

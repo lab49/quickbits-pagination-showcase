@@ -5,7 +5,7 @@ import { Grid } from "../components/Grid";
 
 const Home: NextPage = () => {
   return (
-    <div className="min-h-screen bg-gray-800">
+    <div className="min-h-screen bg-stone-100">
       <Head>
         <title>quickbits: Pagination showcase</title>
         <meta name="description" content="quickbits: Pagination showcase" />
@@ -14,13 +14,13 @@ const Home: NextPage = () => {
 
       <main>
         <div className="flex flex-col">
-          <div>
-            <h1 className="text-2xl">Offset pagination</h1>
+          <div className="container mx-auto mt-5 mb-5 px-5">
+            <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Offset pagination</h1>
 
             <Grid />
           </div>
-          <div>
-            <h1 className="text-2xl">Cursor pagination</h1>
+          <div className="container mx-auto mb-5 px-5">
+            <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">Cursor pagination</h1>
 
             <Grid type="cursor" />
           </div>
