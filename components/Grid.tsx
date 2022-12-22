@@ -13,6 +13,7 @@ import "@ag-grid-community/styles/ag-theme-balham.css";
 ModuleRegistry.register(ServerSideRowModelModule);
 
 const PER_PAGE_COUNT = 100;
+const TABLE_HEIGHT = 400;
 
 const fetchTransactions = async (
   url: URL
@@ -136,11 +137,11 @@ interface Props {
 type OnGetRows = (perf: RequestPerf) => void;
 
 const columnDefs = [
-  { field: "id", sortable: true, width: 65, cellClass: ['text-gray-600','text-xs', 'font-normal']},
-  { field: "type", cellClass: ['text-gray-600','text-xs', 'font-normal']},
-  { field: "amount", cellClass: ['text-gray-600','text-xs', 'font-normal']},
-  { field: "description", cellClass: ['text-gray-600','text-xs', 'font-normal']},
-  { field: "date", cellClass: ['text-gray-600','text-xs', 'font-normal']},
+  { field: "id", headerName: "ID", sortable: true, width: 65, cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
+  { field: "type", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
+  { field: "amount", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
+  { field: "description", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
+  { field: "date", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
 ];
 
 const defaultColDefs = {
@@ -172,10 +173,10 @@ export const Grid = ({ type }: Props) => {
   );
 
   return (
-    <div className="flex">
+    <div className="flex w-full" style={{ height: TABLE_HEIGHT }}>
       <div
-        className="ag-theme-balham mt-7 grow-0 shrink-0 shadow-lg"
-        style={{ height: 400, width: 685 }}
+        className="ag-theme-balham grow-0 shrink-0 shadow-lg h-full"
+        style={{ width: 685 }}
       >
         <AgGridReact<Transaction>
           debug={false}
@@ -190,14 +191,15 @@ export const Grid = ({ type }: Props) => {
         />
       </div>
 
-      <div className="ml-5 items-end">
-        <div className="flex flex-col items-end">
-          <button className="bg-red-700 hover:bg-red-900 text-white font-light py-0 px-2 mb-1 mr-4 rounded" onClick={() => setLog([])}>Clear</button>
-        </div>
-        
-        <div className="font-mono text-green-400 bg-slate-900 overflow-y-scroll" style={{ maxHeight: 400, width: 500}}>
+      <div className="ml-5 flex-1 flex flex-col relative">
+        {!log.length ? null : <div className="absolute top-1 right-1">
+          <button className="bg-red-700 hover:bg-red-900 text-white text-xs py-1 px-2 rounded" onClick={() => setLog([])}>Clear Log</button>
+        </div>}
+
+        <div className="font-mono text-green-400 bg-slate-900 h-full overflow-y-scroll">
+          {!log.length ? <p className="text-center pt-5 text-sm">&larr; Scroll to populate log</p> : null}
           {log.map((el) => (
-            <div className="px-2 py-4 odd:bg-slate-800/50" style={{minHeight:84}} key={el.requestTime + el.sql}>
+            <div className="px-2 py-4 odd:bg-slate-800/50" key={el.requestTime + el.sql}>
               <p className="mb-1 text-xs text-green-600">
                 <span className="mr-4"><span className="text-slate-500">Request:</span> {`${el.requestTime.toFixed(2)}ms`}</span>
                 <span><span className="text-slate-500">SQL:</span> {`${el.queryTime.toFixed(2)}ms`}</span>
