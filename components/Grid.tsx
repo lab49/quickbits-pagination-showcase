@@ -2,6 +2,7 @@ import { useMemo, useCallback, useState } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { ModuleRegistry, IServerSideDatasource } from "@ag-grid-community/core";
 import { ServerSideRowModelModule } from "@ag-grid-enterprise/server-side-row-model";
+import AutoScroll from "@brianmcallister/react-auto-scroll";
 
 import { Transaction } from "../domain/Transaction";
 import { PaginationResponse } from "../domain/PaginationResponse";
@@ -137,18 +138,26 @@ interface Props {
 type OnGetRows = (perf: RequestPerf) => void;
 
 const columnDefs = [
-  { field: "id", headerName: "ID", sortable: true, width: 65, cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
-  { field: "type", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
-  { field: "amount", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
-  { field: "description", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
-  { field: "date", cellClass: ['text-gray-600', 'text-xs', 'font-normal'] },
+  {
+    field: "id",
+    headerName: "ID",
+    sortable: true,
+    width: 65,
+  },
+  { field: "type" },
+  { field: "amount" },
+  {
+    field: "description",
+  },
+  { field: "date" },
 ];
 
 const defaultColDefs = {
   filter: true,
   resizeable: false,
   width: 150,
-}
+  cellClass: ["text-gray-600", "text-xs", "font-normal"],
+};
 
 export const Grid = ({ type }: Props) => {
   const [log, setLog] = useState<RequestPerf[]>([]);
@@ -192,28 +201,50 @@ export const Grid = ({ type }: Props) => {
       </div>
 
       <div className="ml-5 flex-1 flex flex-col relative">
-        {!log.length ? null : <div className="absolute top-1 right-1">
-          <button className="bg-red-700 hover:bg-red-900 text-white text-xs py-1 px-2 rounded" onClick={() => setLog([])}>Clear Log</button>
-        </div>}
+        {!log.length ? null : (
+          <div className="absolute top-1 right-1">
+            <button
+              className="bg-red-700 hover:bg-red-900 text-white text-xs py-1 px-2 rounded"
+              onClick={() => setLog([])}
+            >
+              Clear Log
+            </button>
+          </div>
+        )}
 
         <div className="font-mono text-green-400 bg-slate-900 h-full overflow-y-scroll">
-          {!log.length ? <p className="text-center pt-5 text-sm">&larr; Scroll to populate log</p> : null}
-          {log.map((el) => (
-            <div className="px-2 py-4 odd:bg-slate-800/50" key={el.requestTime + el.sql}>
-              <p className="mb-1 text-xs text-green-600">
-                <span className="mr-4"><span className="text-slate-500">Request:</span> {`${el.requestTime.toFixed(2)}ms`}</span>
-                <span><span className="text-slate-500">SQL:</span> {`${el.queryTime.toFixed(2)}ms`}</span>
-              </p>
+          {!log.length ? (
+            <p className="text-center pt-5 text-sm">
+              &larr; Scroll to populate log
+            </p>
+          ) : null}
+          <AutoScroll showOption={false} height={TABLE_HEIGHT}>
+            {log.map((el) => (
+              <div
+                className="px-2 py-4 odd:bg-slate-800/50"
+                key={el.requestTime + el.sql}
+              >
+                <p className="mb-1 text-xs text-green-600">
+                  <span className="mr-4">
+                    <span className="text-slate-500">Request:</span>{" "}
+                    {`${el.requestTime.toFixed(2)}ms`}
+                  </span>
+                  <span>
+                    <span className="text-slate-500">SQL:</span>{" "}
+                    {`${el.queryTime.toFixed(2)}ms`}
+                  </span>
+                </p>
 
-              <p className="text-xs">
-                {el.sql.replace(
-                  /\$[\d]+/g,
-                  (match) =>
-                    `${el.vals.slice()[parseInt(match.slice(1), 10) - 1]}`
-                )}
-              </p>
-            </div>
-          ))}
+                <p className="text-xs">
+                  {el.sql.replace(
+                    /\$[\d]+/g,
+                    (match) =>
+                      `${el.vals.slice()[parseInt(match.slice(1), 10) - 1]}`
+                  )}
+                </p>
+              </div>
+            ))}
+          </AutoScroll>
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@
     "@ag-grid-community/react": "^28.1.0",
     "@ag-grid-community/styles": "^28.1.0",
     "@ag-grid-enterprise/server-side-row-model": "^28.1.0",
+    "@brianmcallister/react-auto-scroll": "^2.0.0-alpha.0",
     "@roarr/cli": "^5.4.0",
     "http-status-codes": "^2.2.0",
     "next": "12.2.4",
